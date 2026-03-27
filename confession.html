@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>For You</title>
+
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #fde2e4, #fadadd);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    background: #ffffff;
+    width: 90%;
+    max-width: 440px;
+    padding: 42px;
+    border-radius: 22px;
+    box-shadow: 0 30px 60px rgba(231, 84, 128, 0.22);
+}
+
+.text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px;
+    color: #4f2b36;
+    line-height: 1.9;
+    min-height: 110px;
+}
+
+.question {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: #b9375e;
+    margin-top: 22px;
+}
+
+.buttons {
+    margin-top: 32px;
+    position: relative;
+    height: 90px;
+}
+
+button {
+    padding: 11px 28px;
+    border-radius: 26px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.primary {
+    background: #e75480;
+    color: white;
+    box-shadow: 0 12px 26px rgba(231, 84, 128, 0.35);
+}
+
+.secondary {
+    background: transparent;
+    border: 1px solid #f0b7c3;
+    color: #9a5a6a;
+    position: absolute;
+    left: 60%;
+}
+</style>
+</head>
+<body>
+
+<audio id="bgMusic" loop>
+    <source src="love.mp3" type="audio/mpeg">
+</audio>
+
+<div class="card">
+    <div class="text" id="text"></div>
+    <div class="question" id="question"></div>
+    <div class="buttons" id="buttons"></div>
+</div>
+
+<script>
+const textEl = document.getElementById("text");
+const questionEl = document.getElementById("question");
+const buttonsEl = document.getElementById("buttons");
+const music = document.getElementById("bgMusic");
+
+music.volume = 0.4;
+
+const steps = [
+    {
+        text: "Hello Shannel. I made this HTML for you.",
+        question: "What is this?",
+        buttons: [
+            { label: "Tell me", next: 1 }
+        ]
+    },
+    {
+        text: "I wanted to do something simple but sincere.",
+        question: "Why did you make this?",
+        buttons: [
+            { label: "Because you matter to me", next: 2 }
+        ]
+    },
+    {
+        text: "I enjoy talking to you and I like the way you make me feel.",
+        question: "Is this something serious?",
+        buttons: [
+            { label: "Yes, it is", next: 3 }
+        ]
+    },
+    {
+        text: "I thought about this carefully.",
+        question: "Would you like to be my girlfriend?",
+        buttons: [
+            { label: "Yes", yes: true },
+            { label: "No", no: true }
+        ]
+    }
+];
+
+let step = 0;
+
+function playMusic() {
+    if (music.paused) {
+        music.play();
+    }
+}
+
+function typeText(text, callback) {
+    textEl.innerHTML = "";
+    let i = 0;
+    const interval = setInterval(() => {
+        textEl.innerHTML += text.charAt(i);
+        i++;
+        if (i >= text.length) {
+            clearInterval(interval);
+            callback();
+        }
+    }, 38);
+}
+
+function moveALot(btn) {
+    const container = document.querySelector(".buttons");
+    const maxX = container.offsetWidth - btn.offsetWidth;
+    const maxY = container.offsetHeight - btn.offsetHeight;
+
+    btn.style.left = Math.random() * maxX + "px";
+    btn.style.top = Math.random() * maxY + "px";
+}
+
+function renderStep() {
+    buttonsEl.innerHTML = "";
+    questionEl.innerHTML = "";
+
+    typeText(steps[step].text, () => {
+        questionEl.textContent = steps[step].question;
+
+        steps[step].buttons.forEach(btn => {
+            const b = document.createElement("button");
+            b.textContent = btn.label;
+            b.className = btn.yes ? "primary" : "secondary";
+
+            if (btn.no) {
+                b.addEventListener("mouseenter", () => moveALot(b));
+                b.addEventListener("touchstart", () => moveALot(b));
+            }
+
+            b.onclick = () => {
+                playMusic();
+
+                if (btn.next !== undefined) {
+                    step = btn.next;
+                    renderStep();
+                }
+                if (btn.yes) {
+                    showShock();
+                }
+            };
+
+            buttonsEl.appendChild(b);
+        });
+    });
+}
+
+function showShock() {
+    textEl.innerHTML = "";
+    questionEl.innerHTML = "";
+    buttonsEl.innerHTML = "";
+
+    typeText("Oh my god. Is this real?", () => {
+        const b = document.createElement("button");
+        b.textContent = "Yes, wallahi bro, it is real.";
+        b.className = "primary";
+        b.onclick = finalMessage;
+        buttonsEl.appendChild(b);
+    });
+}
+
+function finalMessage() {
+    textEl.innerHTML = "";
+    questionEl.innerHTML = "";
+    buttonsEl.innerHTML = "";
+
+    typeText(
+        "It is real. I mean this sincerely. Thank you for trusting me. I will take care of this and of you.",
+        () => {}
+    );
+}
+
+renderStep();
+</script>
+
+</body>
+</html>
