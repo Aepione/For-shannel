@@ -8,22 +8,47 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
 
 <style>
+* { box-sizing: border-box; }
+
 body {
     margin: 0;
     height: 100vh;
-    background: linear-gradient(135deg, #fde2e4, #fadadd);
+    background: linear-gradient(135deg, #fde2e4, #fadadd, #fff1f5);
     display: flex;
     justify-content: center;
     align-items: center;
+    overflow: hidden;
+}
+
+/* Sparkles */
+.sparkle {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: rgba(255, 182, 193, 0.8);
+    border-radius: 50%;
+    animation: float 6s linear infinite;
+}
+
+@keyframes float {
+    0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(-10vh) scale(1); opacity: 0; }
 }
 
 .card {
-    background: #ffffff;
+    background: white;
     width: 90%;
     max-width: 440px;
     padding: 42px;
-    border-radius: 22px;
-    box-shadow: 0 30px 60px rgba(231, 84, 128, 0.22);
+    border-radius: 24px;
+    box-shadow: 0 30px 60px rgba(231, 84, 128, 0.25);
+    animation: pop 0.8s ease forwards;
+}
+
+@keyframes pop {
+    from { opacity: 0; transform: translateY(20px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .text {
@@ -39,6 +64,12 @@ body {
     font-size: 18px;
     color: #b9375e;
     margin-top: 22px;
+    opacity: 0;
+    animation: fadeIn 0.6s ease forwards;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
 }
 
 .buttons {
@@ -48,18 +79,26 @@ body {
 }
 
 button {
-    padding: 11px 28px;
-    border-radius: 26px;
+    padding: 12px 30px;
+    border-radius: 28px;
     border: none;
     font-size: 14px;
     cursor: pointer;
-    transition: transform 0.1s ease;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+button:active {
+    transform: scale(0.95);
 }
 
 .primary {
     background: #e75480;
     color: white;
-    box-shadow: 0 12px 26px rgba(231, 84, 128, 0.35);
+    box-shadow: 0 14px 28px rgba(231, 84, 128, 0.4);
+}
+
+.primary:hover {
+    box-shadow: 0 18px 36px rgba(231, 84, 128, 0.55);
 }
 
 .secondary {
@@ -89,32 +128,36 @@ const questionEl = document.getElementById("question");
 const buttonsEl = document.getElementById("buttons");
 const music = document.getElementById("bgMusic");
 
-music.volume = 0.4;
+music.volume = 0.45;
+
+/* Sparkles generator */
+setInterval(() => {
+    const s = document.createElement("div");
+    s.className = "sparkle";
+    s.style.left = Math.random() * 100 + "vw";
+    s.style.animationDuration = 4 + Math.random() * 4 + "s";
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 8000);
+}, 400);
 
 const steps = [
     {
         text: "Hello Shannel. I made this HTML for you.",
         question: "What is this?",
-        buttons: [
-            { label: "Tell me", next: 1 }
-        ]
+        buttons: [{ label: "Tell me", next: 1 }]
     },
     {
-        text: "I wanted to do something simple but sincere.",
+        text: "I wanted to do something small but thoughtful.",
         question: "Why did you make this?",
-        buttons: [
-            { label: "Because you matter to me", next: 2 }
-        ]
+        buttons: [{ label: "Because you matter to me", next: 2 }]
     },
     {
-        text: "I enjoy talking to you and I like the way you make me feel.",
-        question: "Is this something serious?",
-        buttons: [
-            { label: "Yes, it is", next: 3 }
-        ]
+        text: "I really enjoy talking to you. You make things feel lighter.",
+        question: "Is this something real?",
+        buttons: [{ label: "Yes, it is", next: 3 }]
     },
     {
-        text: "I thought about this carefully.",
+        text: "So I just want to ask you honestly.",
         question: "Would you like to be my girlfriend?",
         buttons: [
             { label: "Yes", yes: true },
@@ -126,9 +169,7 @@ const steps = [
 let step = 0;
 
 function playMusic() {
-    if (music.paused) {
-        music.play();
-    }
+    if (music.paused) music.play();
 }
 
 function typeText(text, callback) {
@@ -139,16 +180,15 @@ function typeText(text, callback) {
         i++;
         if (i >= text.length) {
             clearInterval(interval);
-            callback();
+            setTimeout(callback, 300);
         }
-    }, 38);
+    }, 42 + Math.random() * 20);
 }
 
 function moveALot(btn) {
-    const container = document.querySelector(".buttons");
-    const maxX = container.offsetWidth - btn.offsetWidth;
-    const maxY = container.offsetHeight - btn.offsetHeight;
-
+    const c = document.querySelector(".buttons");
+    const maxX = c.offsetWidth - btn.offsetWidth;
+    const maxY = c.offsetHeight - btn.offsetHeight;
     btn.style.left = Math.random() * maxX + "px";
     btn.style.top = Math.random() * maxY + "px";
 }
@@ -172,14 +212,11 @@ function renderStep() {
 
             b.onclick = () => {
                 playMusic();
-
                 if (btn.next !== undefined) {
                     step = btn.next;
                     renderStep();
                 }
-                if (btn.yes) {
-                    showShock();
-                }
+                if (btn.yes) showYes();
             };
 
             buttonsEl.appendChild(b);
@@ -187,12 +224,12 @@ function renderStep() {
     });
 }
 
-function showShock() {
+function showYes() {
     textEl.innerHTML = "";
     questionEl.innerHTML = "";
     buttonsEl.innerHTML = "";
 
-    typeText("Oh my god. Is this real?", () => {
+    typeText("Wait... is this real?", () => {
         const b = document.createElement("button");
         b.textContent = "Yes, wallahi bro, it is real.";
         b.className = "primary";
@@ -203,11 +240,8 @@ function showShock() {
 
 function finalMessage() {
     textEl.innerHTML = "";
-    questionEl.innerHTML = "";
-    buttonsEl.innerHTML = "";
-
     typeText(
-        "It is real. I mean this sincerely. Thank you for trusting me. I will take care of this and of you.",
+        "It is real. I like you, and I want to get to know you better. Thank you for saying yes.",
         () => {}
     );
 }
